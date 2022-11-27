@@ -121,7 +121,7 @@ def main():
         nb_features=0, # if nb_features is 0, then use None as projection_matrix in generalized kernel function \
                        # which means using determinisitc feature projection
                        # you need to first cd to "~/anaconda3/envs/vit_performer/lib/python3.8/site-packages/performer_pytorch" \
-                       # run "vim performer_pytorch.py" then add "if nb_full_blocks == 0: return None" after Line 143
+                       # edit "performer_pytorch.py": add "if nb_full_blocks == 0: return None" after Line 143
         feature_redraw_interval=None,
         kernel_fn = nn.ReLU(),
     )
