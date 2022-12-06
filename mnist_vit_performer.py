@@ -8,7 +8,8 @@ from torchvision import datasets, transforms
 from torch.optim.lr_scheduler import StepLR
 from vit_pytorch.efficient import ViT
 from performer_pytorch import Performer
-import time
+from torch import Tensor
+
 
 def train(args, model, device, train_loader, optimizer, epoch):
     model.train()
@@ -109,21 +110,44 @@ def main():
     train_loader = torch.utils.data.DataLoader(dataset1,**train_kwargs)
     test_loader = torch.utils.data.DataLoader(dataset2, **test_kwargs)
 
+    
+    from torch.autograd import Variable
+
+    class quad(nn.Module):
+
+        def __init__(self):
+            super(quad, self).__init__()
+
+        def forward(self, x):
+            squ = torch.pow(x, 2)
+            return squ
+
+    class biquad(nn.Module):
+
+        def __init__(self):
+            super(biquad, self).__init__()
+
+        def forward(self, x):
+            squ = torch.pow(x, 4)
+            return squ
+
+
     performer = Performer(
         dim = 512,
         depth = 8,
         heads = 8,
         causal = False,
-        dim_head = 64,
-
-        # Generalized kernel function, if commented out, will use softmax
+        # kernel_fn = nn.ReLU(),
+        # kernel_fn = quad(),
+        kernel_fn = biquad(),
         generalized_attention=True,
         nb_features=0, # if nb_features is 0, then use None as projection_matrix in generalized kernel function \
-                       # which means using determinisitc feature projection
-                       # you need to first cd to "~/anaconda3/envs/vit_performer/lib/python3.8/site-packages/performer_pytorch" \
-                       # edit "performer_pytorch.py": add "if nb_full_blocks == 0: return None" after Line 143
+                        # which means using determinisitc feature projection
+                        # you need to first cd to "~/anaconda3/envs/vit_performer/lib/python3.8/site-packages/performer_pytorch" \
+                        # run "vim performer_pytorch.py" then add "if nb_full_blocks == 0: return None" after Line 143
+                        # edit "performer_pytorch.py": add "if nb_full_blocks == 0: return None" after Line 143
         feature_redraw_interval=None,
-        kernel_fn = nn.ReLU(),
+        dim_head = 64
     )
 
     model = ViT(
@@ -138,13 +162,11 @@ def main():
     optimizer = optim.Adadelta(model.parameters(), lr=args.lr)
 
     scheduler = StepLR(optimizer, step_size=1, gamma=args.gamma)
-    start = time.time()
     for epoch in range(1, args.epochs + 1):
         train(args, model, device, train_loader, optimizer, epoch)
         test(model, device, test_loader)
         scheduler.step()
-    end = time.time()
-    print(f"Total seconds elapsed: {end - start}")
+
     if args.save_model:
         torch.save(model.state_dict(), "./models/mnist_vit_performer.pt")
 
