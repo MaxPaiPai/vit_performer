@@ -1,0 +1,170 @@
+# MNIST
+
+# ViT non performer 
+python vit_performer.py \
+--kernel non_performer \
+> ./logs/MNIST/MNIST_vit_non_performer.log
+
+# ViT performer relu
+python vit_performer.py \
+--kernel relu \
+--nb_features 0 \
+> ./logs/MNIST/MNIST_vit_performer_relu_nb_features_0_feature_redraw_interval_None.log
+
+# ViT performer quad
+python vit_performer.py \
+--kernel quad \
+--nb_features 0 \
+> ./logs/MNIST/MNIST_vit_performer_quad_nb_features_0_feature_redraw_interval_None.log
+
+# ViT performer x^4
+python vit_performer.py \
+--kernel x^4 \
+--nb_features 0 \
+> ./logs/MNIST/MNIST_vit_performer_x^4_nb_features_0_feature_redraw_interval_None.log
+
+
+
+
+# ablation
+
+# ViT performer softmax with redraw
+
+python vit_performer.py \
+--kernel softmax \
+--nb_features 512 \
+--redraw 1000 \
+> ./logs/MNIST/MNIST_vit_performer_softmax_nb_features_512_feature_redraw_interval_1000.log
+
+python vit_performer.py \
+--kernel softmax \
+--nb_features 64 \
+--redraw 1000 \
+> ./logs/MNIST/MNIST_vit_performer_softmax_nb_features_64_feature_redraw_interval_1000.log
+
+
+
+# ViT performer softmax no redraw
+
+python vit_performer.py \
+--kernel softmax \
+--nb_features 512 \
+> ./logs/MNIST/MNIST_vit_performer_softmax_nb_features_512_feature_redraw_interval_None.log
+
+python vit_performer.py \
+--kernel softmax \
+--nb_features 64 \
+> ./logs/MNIST/MNIST_vit_performer_softmax_nb_features_64_feature_redraw_interval_None.log
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Caltech256
+
+# ViT non performer 
+python vit_performer.py \
+--kernel non_performer \
+--dataset Caltech256 \
+--batch-size 32 \
+--test-batch-size 256 \
+> ./logs/Caltech256/Caltech256_vit_non_performer.log
+
+# ViT performer relu
+python vit_performer.py \
+--kernel relu \
+--nb_features 0 \
+--dataset Caltech256 \
+--batch-size 32 \
+--test-batch-size 256 \
+> ./logs/Caltech256/Caltech256_vit_performer_relu_nb_features_0_feature_redraw_interval_None.log
+
+# ViT performer quad
+python vit_performer.py \
+--kernel quad \
+--nb_features 0 \
+--dataset Caltech256 \
+--batch-size 32 \
+--test-batch-size 256 \
+> ./logs/Caltech256/Caltech256_vit_performer_quad_nb_features_0_feature_redraw_interval_None.log
+
+# ViT performer x^4
+python vit_performer.py \
+--kernel x^4 \
+--nb_features 0 \
+--dataset Caltech256 \
+--batch-size 32 \
+--test-batch-size 256 \
+> ./logs/Caltech256/Caltech256_vit_performer_x^4_nb_features_0_feature_redraw_interval_None.log
+
+
+
+
+# ablation
+
+# ViT performer softmax with redraw
+
+python vit_performer.py \
+--kernel softmax \
+--nb_features 384 \
+--redraw 1000 \
+--dataset Caltech256 \
+--batch-size 32 \
+--test-batch-size 256 \
+> ./logs/Caltech256/Caltech256_vit_performer_softmax_nb_features_384_feature_redraw_interval_1000.log
+
+python vit_performer.py \
+--kernel softmax \
+--nb_features 64 \
+--redraw 1000 \
+--dataset Caltech256 \
+--batch-size 32 \
+--test-batch-size 256 \
+> ./logs/Caltech256/Caltech256_vit_performer_softmax_nb_features_64_feature_redraw_interval_1000.log
+
+
+
+# ViT performer softmax no redraw
+
+python vit_performer.py \
+--kernel softmax \
+--nb_features 384 \
+--dataset Caltech256 \
+--batch-size 32 \
+--test-batch-size 256 \
+> ./logs/Caltech256/Caltech256_vit_performer_softmax_nb_features_384_feature_redraw_interval_None.log
+
+python vit_performer.py \
+--kernel softmax \
+--nb_features 64 \
+--dataset Caltech256 \
+--batch-size 32 \
+--test-batch-size 256 \
+> ./logs/Caltech256/Caltech256_vit_performer_softmax_nb_features_64_feature_redraw_interval_None.log

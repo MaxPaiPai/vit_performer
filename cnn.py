@@ -6,20 +6,40 @@ import torch.nn.functional as F
 import torch.optim as optim
 from torchvision import datasets, transforms
 from torch.optim.lr_scheduler import StepLR
-from vit_pytorch.efficient import ViT
-from performer_pytorch import Performer
-from torch import Tensor
+
+
+class Net(nn.Module):
+    def __init__(self):
+        super(Net, self).__init__()
+        self.conv1 = nn.Conv2d(1, 32, 3, 1)
+        self.conv2 = nn.Conv2d(32, 64, 3, 1)
+        self.dropout1 = nn.Dropout(0.25)
+        self.dropout2 = nn.Dropout(0.5)
+        self.fc1 = nn.Linear(9216, 128)
+        self.fc2 = nn.Linear(128, 10)
+
+    def forward(self, x):
+        x = self.conv1(x)
+        x = F.relu(x)
+        x = self.conv2(x)
+        x = F.relu(x)
+        x = F.max_pool2d(x, 2)
+        x = self.dropout1(x)
+        x = torch.flatten(x, 1)
+        x = self.fc1(x)
+        x = F.relu(x)
+        x = self.dropout2(x)
+        x = self.fc2(x)
+        output = F.log_softmax(x, dim=1)
+        return output
 
 
 def train(args, model, device, train_loader, optimizer, epoch):
     model.train()
     for batch_idx, (data, target) in enumerate(train_loader):
         data, target = data.to(device), target.to(device)
-        data = data.expand(-1, 3, -1, -1)
         optimizer.zero_grad()
         output = model(data)
-        output = F.log_softmax(output, dim=1)
-
         loss = F.nll_loss(output, target)
         loss.backward()
         optimizer.step()
@@ -38,9 +58,7 @@ def test(model, device, test_loader):
     with torch.no_grad():
         for data, target in test_loader:
             data, target = data.to(device), target.to(device)
-            data = data.expand(-1, 3, -1, -1)
             output = model(data)
-            output = F.log_softmax(output, dim=1)
             test_loss += F.nll_loss(output, target, reduction='sum').item()  # sum up batch loss
             pred = output.argmax(dim=1, keepdim=True)  # get the index of the max log-probability
             correct += pred.eq(target.view_as(pred)).sum().item()
@@ -59,7 +77,7 @@ def main():
                         help='input batch size for training (default: 64)')
     parser.add_argument('--test-batch-size', type=int, default=1000, metavar='N',
                         help='input batch size for testing (default: 1000)')
-    parser.add_argument('--epochs', type=int, default=14, metavar='N',
+    parser.add_argument('--epochs', type=int, default=10, metavar='N',
                         help='number of epochs to train (default: 14)')
     parser.add_argument('--lr', type=float, default=1.0, metavar='LR',
                         help='learning rate (default: 1.0)')
@@ -110,55 +128,7 @@ def main():
     train_loader = torch.utils.data.DataLoader(dataset1,**train_kwargs)
     test_loader = torch.utils.data.DataLoader(dataset2, **test_kwargs)
 
-    
-    from torch.autograd import Variable
-
-    class quad(nn.Module):
-
-        def __init__(self):
-            super(quad, self).__init__()
-
-        def forward(self, x):
-            squ = torch.pow(x, 2)
-            return squ
-
-    class biquad(nn.Module):
-
-        def __init__(self):
-            super(biquad, self).__init__()
-
-        def forward(self, x):
-            squ = torch.pow(x, 4)
-            return squ
-
-
-    performer = Performer(
-        dim = 512,
-        depth = 8,
-        heads = 8,
-        causal = False,
-        # kernel_fn = nn.ReLU(),
-        # kernel_fn = quad(),
-        kernel_fn = biquad(),
-        generalized_attention=True,
-        nb_features=0, # if nb_features is 0, then use None as projection_matrix in generalized kernel function \
-                        # which means using determinisitc feature projection
-                        # you need to first cd to "~/anaconda3/envs/vit_performer/lib/python3.8/site-packages/performer_pytorch" \
-                        # run "vim performer_pytorch.py" then add "if nb_full_blocks == 0: return None" after Line 143
-                        # edit "performer_pytorch.py": add "if nb_full_blocks == 0: return None" after Line 143
-        feature_redraw_interval=None,
-        dim_head = 64
-    )
-
-    model = ViT(
-        dim = 512,
-        image_size = 28,
-        patch_size = 7,
-        num_classes = 10,
-        transformer = performer
-    )
-    
-    model = model.to(device)
+    model = Net().to(device)
     optimizer = optim.Adadelta(model.parameters(), lr=args.lr)
 
     scheduler = StepLR(optimizer, step_size=1, gamma=args.gamma)
@@ -168,7 +138,7 @@ def main():
         scheduler.step()
 
     if args.save_model:
-        torch.save(model.state_dict(), "./models/mnist_vit_performer.pt")
+        torch.save(model.state_dict(), "./models/mnist_cnn.pt")
 
 
 if __name__ == '__main__':
